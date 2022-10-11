@@ -5,10 +5,11 @@ services:
     container_name: elasticsearch
     restart: always
     volumes:
-      - elastic-data:/usr/share/elasticsearch/data/
+      - elastic_data:/usr/share/elasticsearch/data/
+      - elastic_config:/usr/share/elasticsearch/config/
     environment:
-      - ES_JAVA_OPTS: "-Xmx256m -Xms256m"
-      - discovery.type: single-node    
+       ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+       discovery.type: single-node    
     ports:
       - 9200:9200
       - 9300:9300
@@ -20,14 +21,14 @@ services:
     container_name: logstash
     restart: always
     volumes:
-      - ./logstash/:/logstash_dir
-    command: logstash -f /logstash_dir/logstash.conf 
+      - logstash_pipeline:/usr/share/logstash/pipeline
+      - logstash_config:/usr/share/logstash/config  
     depends_on:
       - Elasticsearch
     ports:
       - 9600:9600
     environment:
-      - LS_JAVA_OPTS: "-Xmx256m -Xms256m"    
+       LS_JAVA_OPTS: "-Xmx256m -Xms256m"    
     networks:
       - elk
 
@@ -45,7 +46,13 @@ services:
       - elk
     
 volumes:
-  elastic-data:
+  elastic_data:
+    driver: local
+  elastic_config:
+    driver: local
+  logstash_pipeline:
+    driver: local
+  logstash_config:
     driver: local
 
 networks:
