@@ -44,7 +44,8 @@ services:
     networks:
       - elk
 volumes:
-  elastic_data: {}
+  elastic_data:
+    driver: local
 
 networks:
   elk:
