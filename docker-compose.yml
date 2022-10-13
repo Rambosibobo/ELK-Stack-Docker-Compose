@@ -8,8 +8,8 @@ services:
       - elastic_data:/usr/share/elasticsearch/data
       - elastic_config:/usr/share/elasticsearch/config
     environment:
-      - discovery.type= single-node  
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      discovery.type: single-node  
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
     ports:
       - 9200:9200
       - 9300:9300
@@ -28,7 +28,7 @@ services:
     ports:
       - 9600:9600
     environment:
-      - "LS_JAVA_OPTS=-Xmx256m -Xms256m"    
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"    
     networks:
       - elk
 
