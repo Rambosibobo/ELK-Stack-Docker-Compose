@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   Elasticsearch:
-    image: elasticsearch:7.17.6
+    image: elasticsearch:8.4.3
     container_name: elasticsearch
     restart: always
     volumes:
@@ -17,7 +17,7 @@ services:
       - elk
 
   Logstash:
-    image: logstash:7.17.6
+    image: logstash:8.4.3
     container_name: logstash
     restart: always
     volumes:
@@ -33,7 +33,7 @@ services:
       - elk
 
   Kibana:
-    image: kibana:7.17.6
+    image: kibana:8.4.3
     container_name: kibana
     restart: always       
     ports:
