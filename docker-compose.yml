@@ -6,10 +6,25 @@ services:
     restart: always
     volumes:
       - elastic_data:/usr/share/elasticsearch/data
-      - elastic_config:/usr/share/elasticsearch/config
+      - ./elastic-stack-ca.p12:/usr/share/elasticsearch/config/elastic-stack-ca.p12
     environment:
-       ES_JAVA_OPTS: "-Xmx256m -Xms256m"
-       discovery.type: single-node    
+      - node.name=elasticsearch
+      - discovery.seed_hosts=elasticsearch
+      - cluster.initial_master_nodes=elasticsearch
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=true
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.keystore.type=PKCS12
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.keystore.path=elastic-stack-ca.p12
+      - xpack.security.transport.ssl.truststore.path=elastic-stack-ca.p12
+      - xpack.security.transport.ssl.truststore.type=PKCS12
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1   
     ports:
       - 9200:9200
       - 9300:9300
@@ -39,7 +54,9 @@ services:
     ports:
       - 5601:5601
     environment:
-       ELASTICSEARCH_URL=http://elasticsearch:9200  
+      ELASTICSEARCH_URL: "http://elasticsearch:9200"
+      ELASTICSEARCH_USERNAME: "kibana"
+      ELASTICSEARCH_PASSWORD: "kibana" 
     depends_on:
       - Elasticsearch  
     networks:
