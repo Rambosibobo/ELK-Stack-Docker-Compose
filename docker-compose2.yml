@@ -1,60 +1,69 @@
-version: '3.3'
-
+version: '3.6'
 services:
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.6.1
-    ports:
-      - "9200:9200"
-      - "9300:9300"
+  Elasticsearch:
+    image: elasticsearch:7.16.2
+    container_name: elasticsearch
+    restart: always
+    volumes:
+      - elastic_data:/usr/share/elasticsearch/data
+      - elastic_config:/usr/share/elasticsearch/config
+    environment:
+       ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+       discovery.type: single-node
+       ELASTIC_USERNAME: "elastic"
+       ELASTIC_PASSWORD: "elastic123!"
+       http.cors.enabled: "true"
+       http.cors.allow-origin: "*"
+       xpack.security.enabled: "true"
     configs:
       - source: elastic_config
         target: /usr/share/elasticsearch/config/elasticsearch.yml
-    environment:
-      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
-      ELASTIC_USERNAME: "elastic"
-      ELASTIC_PASSWORD: "MyPw123"
-      http.cors.enabled: "true"
-      http.cors.allow-origin: "*"
-      xpack.security.enabled: "true"
+    ports:
+      - 9200:9200
+      - 9300:9300
     networks:
       - elk
-    deploy:
-      mode: replicated
-      replicas: 1
 
-  logstash:
-    image: docker.elastic.co/logstash/logstash:6.6.1
+  Logstash:
+    image: logstash:7.16.2
+    container_name: logstash
+    restart: always
+    volumes:
+      - logstash_pipeline:/usr/share/logstash/pipeline
+      - logstash_config:/usr/share/logstash/config
+    depends_on:
+      - Elasticsearch
     ports:
-      - "5044:5044"
-      - "9600:9600"
+      - 5044:5044
+      - 9600:9600
     configs:
       - source: logstash_config
         target: /usr/share/logstash/config/logstash.yml:rw
       - source: logstash_pipeline
         target: /usr/share/logstash/pipeline/logstash.conf
     environment:
-      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
-      xpack.monitoring.elasticsearch.url: "elasticsearch:9200"
-      xpack.monitoring.elasticsearch.username: "elastic"
-      xpack.monitoring.elasticsearch.password: "MyPw123"
+       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+       xpack.monitoring.elasticsearch.url: "elasticsearch:9200"
+       xpack.monitoring.elasticsearch.username: "elastic"
+       xpack.monitoring.elasticsearch.password: "elastic123!"
     networks:
       - elk
-    deploy:
-      mode: replicated
-      replicas: 1
 
-  kibana:
-    image: docker.elastic.co/kibana/kibana:6.6.1
+  Kibana:
+    image: kibana:7.16.2
+    container_name: kibana
+    restart: always
     ports:
-      - "5601:5601"
+      - 5601:5601
     configs:
       - source: kibana_config
         target: /usr/share/kibana/config/kibana.yml
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    depends_on:
+      - Elasticsearch
     networks:
       - elk
-    deploy:
-      mode: replicated
-      replicas: 1
 
 configs:
   elastic_config:
@@ -66,6 +75,16 @@ configs:
   kibana_config:
     file: ./kibana/config/kibana.yml
 
+volumes:
+  elastic_data:
+    driver: local
+  elastic_config:
+    driver: local
+  logstash_pipeline:
+    driver: local
+  logstash_config:
+    driver: local
+
 networks:
   elk:
-    driver: overlay
+    name: elk
