@@ -1,7 +1,7 @@
 version: '3.6'
 services:
   Elasticsearch:
-    image: elasticsearch:7.17.6
+    image: elasticsearch:7.16.2
     container_name: elasticsearch
     restart: always
     volumes:
@@ -17,7 +17,7 @@ services:
       - elk
 
   Logstash:
-    image: logstash:7.17.6
+    image: logstash:7.16.2
     container_name: logstash
     restart: always
     volumes:
@@ -27,13 +27,14 @@ services:
       - Elasticsearch
     ports:
       - 9600:9600
+      - 5044:5044
     environment:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"    
     networks:
       - elk
 
   Kibana:
-    image: kibana:7.17.6
+    image: kibana:7.16.2
     container_name: kibana
     restart: always       
     ports:
